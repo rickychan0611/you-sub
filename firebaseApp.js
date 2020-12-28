@@ -1,7 +1,7 @@
 import firebase from "firebase/app";
 // Required for side-effects
 require("firebase/auth");
-require("firebase/firestore");
+require("firebase/database");
 require("firebase/storage");
 require("firebase/functions");
 
@@ -18,7 +18,7 @@ if (!firebase.apps.length) {
     });
 };
 
-export const db = firebase.firestore();
+export const db = firebase.database();
 export const auth = firebase.auth()
 export const storage = firebase.storage()
 export const functions = firebase.functions()

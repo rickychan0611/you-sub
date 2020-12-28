@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import ElectronBrowserView from '../../../../lib/ElectronBrowserView'
+import ElectronBrowserView, { removeViews } from '../../../../lib/ElectronBrowserView'
 
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
@@ -45,9 +45,25 @@ const Home = () => {
     })
   }
 
+  const email = "ri331s3@gmail.com"
+  const password = "111111"
+  const nickname = "Ricrick"
+  const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A?" + "?sub_confirmation=1"
+  const videoUrl = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
+
   const onSubmit = () => {
-    auth.createUserWithEmailAndPassword("ric0611@gmail.com", "111111")
-        .then((doc) => {console.log(doc)})
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((doc) => {
+        console.log(doc.user.uid)
+        db.ref('users/' + doc.user.uid).set({
+          uid: doc.user.uid,
+          email,
+          password,
+          nickname,
+          channelUrl,
+          videoUrl
+        })
+      })
   }
 
   useEffect(() => {
@@ -65,6 +81,10 @@ const Home = () => {
     }
   }, [attached])
 
+  // useEffect(()=>{
+  //   return () => removeViews();
+  // },[])
+
   return (
 
     <div style={{ margin: 25 }}>
@@ -81,7 +101,6 @@ const Home = () => {
           {/* <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
           <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
           <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>toggleView</Button><br /> */}
-          <Button variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button><br />
           <br /><br /><br />
 
 
@@ -94,9 +113,12 @@ const Home = () => {
               <TextField style={{ margin: 8 }} variant="outlined" label="Your nickname " />
               <TextField style={{ margin: 8 }} variant="outlined" label="Your Youtube channel URL" fullWidth />
               <p style={{ marginLeft: 12, fontSize: 12 }}>How to find the URL? 1. Click on your profile picture. 2. Click on 'Your channel' 3. Copy / paste the url from the address bar</p>
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL" fullWidth />
+              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #1" fullWidth />
+              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #2" fullWidth />
+              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #3" fullWidth />
               <p style={{ marginLeft: 12, fontSize: 12 }}>The video that you want people to watch</p>
             </form>
+            <Button style={{ margin: 8 }} variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button><br />
           </Paper>
 
 
@@ -122,7 +144,8 @@ const Home = () => {
                 setAttached(true)
               }}
               style={{
-                height: 800,
+                width: 800,
+                height: 400,
               }}
               disablewebsecurity={true}
             />
