@@ -17,8 +17,6 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
-    "electron-firebase": "^1.0.0",
-    "firebase": "^8.2.1",
     "lodash.camelcase": "^4.3.0",
     "prop-types": "^15.7.2",
     "react-router-dom": "^5.2.0"
@@ -67,10 +65,7 @@
     "test": "npm run lint && npm run mocha",
     "watch": "webpack --watch -p",
     "example-react": "cd example && react-app-rewired start",
-    "example": "concurrently \"cross-env BROWSER=none yarn example-react\" \"wait-on http://localhost:3000 && electron ./example/electron\"",
-    "rebuild": "./node_modules/.bin/electron-rebuild",
-    "deploy": "node ./config/firebase-deploy.js",
-    "start": "electron ./main.js"
+    "example": "concurrently \"cross-env BROWSER=none yarn example-react\" \"wait-on http://localhost:3000 && electron ./example/electron\""
   },
   "keywords": [
     "react",

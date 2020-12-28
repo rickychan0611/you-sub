@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 
+import { db, auth } from "../../../../firebaseApp";
 
 let view;
 
@@ -44,6 +45,11 @@ const Home = () => {
     })
   }
 
+  const onSubmit = () => {
+    auth.createUserWithEmailAndPassword("ric0611@gmail.com", "111111")
+        .then((doc) => {console.log(doc)})
+  }
+
   useEffect(() => {
     if (attached) {
       console.log(view)
@@ -75,6 +81,7 @@ const Home = () => {
           {/* <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
           <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
           <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>toggleView</Button><br /> */}
+          <Button variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button><br />
           <br /><br /><br />
 
 

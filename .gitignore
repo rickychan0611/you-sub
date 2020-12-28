@@ -31,3 +31,4 @@ example/dist
 *.DS_Store
 
 dist/
+firebase-config.json
