@@ -8,7 +8,7 @@ export default (props) => {
     return (
         <Switch>
             <Route path="/" component={Register} />
-            <Route path="/home" component={Home} />
+            {/* <Route path="/home" component={Home} /> */}
         </Switch>
     )
 }

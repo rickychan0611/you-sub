@@ -1,23 +1,14 @@
 {
-  "name": "react-electron-browser-view",
-  "version": "3.0.0",
-  "description": "Electron BrowserView Component for React",
+  "name": "you-sub-auto",
+  "version": "1.0.0",
+  "description": "Youtube Auto Subscriber",
   "main": "lib/ElectronBrowserView.js",
   "license": "MIT",
-  "author": "vantezzen (https://vantezzen.io)",
-  "homepage": "https://github.com/vantezzen/react-electron-browser-view",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vantezzen/react-electron-browser-view.git"
-  },
-  "bugs": {
-    "url": "https://github.com/vantezzen/react-electron-browser-view/issues"
-  },
+  "author": "Ricky",
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
-    "electron-firebase": "^1.0.0",
     "firebase": "^8.2.1",
     "lodash.camelcase": "^4.3.0",
     "prop-types": "^15.7.2",

@@ -14,9 +14,9 @@ import { db, auth } from "../../../../firebaseApp";
 let view;
 
 // URL we want to toggle between
-const Home = () => {
+const Register = () => {
 
-  const email = "ri331s3@gmail.com"
+  const email = "r883@gmail.com"
   const password = "111111"
   const nickname = "Ricrick"
   const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A?" + "?sub_confirmation=1"
@@ -48,9 +48,7 @@ const Home = () => {
   return (
 
     <div style={{ margin: 50}}>
-            <Grid xs={12}>
               <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold"}}  gutterBottom>Step 1: Register</Typography>
-            </Grid>
           <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
             <form noValidate autoComplete="off">
               <TextField style={{ margin: 8 }} variant="outlined" label="Your E-mail" />
@@ -73,4 +71,4 @@ const Home = () => {
 
 
 
-export default Home
+export default Register
