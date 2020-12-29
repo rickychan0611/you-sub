@@ -171,6 +171,7 @@ const View = () => {
             <List component="nav" style={{padding : 10}}>
                 <ListItemText primary="Trash" />
                 <ListItemText primary="Spam" />
+                <ListItemText primary="Spam" />
             </List>
           </Paper>
         </Grid>
