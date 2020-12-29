@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import ElectronBrowserView from '../../../../lib/ElectronBrowserView'
 
 import { useHistory } from "react-router-dom";
@@ -11,10 +11,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Box from '@material-ui/core/Box';
-
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import { db, auth } from "../../../../firebaseApp";
 
 import { resolve } from 'path'
+import { Divider } from '@material-ui/core';
+import { Context } from '../../context/Context';
 const preload = resolve('./example/src/preload.js')
 
 var ipcMain = require("electron").remote.ipcMain;
@@ -25,6 +28,7 @@ let view;
 // URL we want to toggle between
 const View = () => {
   let history = useHistory();
+  const { onlineUsers, setOnlineUsers } = useContext(Context)
 
   const urls = [
     'https://www.youtube.com/channel/UCpqk_tJt2AvGcQm22oQwdtQ?sub_confirmation=1',
@@ -36,7 +40,7 @@ const View = () => {
   const [attached, setAttached] = useState(false)
   const [devTools, setDevTools] = useState(true)
   const [toggleView, setToggleView] = useState(true)
-  const [youtubeLogedIn, setYoutubeLogedIn]  = useState(false)
+  const [youtubeLogedIn, setYoutubeLogedIn] = useState(false)
 
   const clickSub = (button) => {
     console.log(button, "This loads no problem!");
@@ -80,7 +84,7 @@ const View = () => {
   ipcMain.on('query', function (event, value) {
     console.log("!!!!!!!!!!!!!!!!!!!!!!")
     console.log(value);
-    if (value === "youtubeLogedIn" ) {
+    if (value === "youtubeLogedIn") {
       setYoutubeLogedIn(true)
     }
     else setYoutubeLogedIn(false)
@@ -120,39 +124,58 @@ const View = () => {
           onClick={() => { history.push('/') }}>Submit</Button><br />
       </Box>
       <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>
-        Step 2: Login your youtube account <br/>
+        Step 2: Login your youtube account <br />
         {youtubeLogedIn ? "Logged in" : "Not Logged in"}
-        </Typography>
-      <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
-        {toggleView &&
-          <ElectronBrowserView
-            className="browser"
-            preload={preload}
-            // Keep instance reference so we can execute methods
-            ref={(viewRef) => {
-              view = viewRef
-            }}
-            src={urls[url]}
-            devtools={devTools}
-            onDidFinishLoad={() => {
-              setAttached(true)
-              console.log("onDomReady");
-            }}
-            onDidAttach={() => {
-              // setAttached(true)
-              console.log("BrowserView attached");
-            }}
-            onUpdateTargetUrl={() => {
-              console.log("Updated Target URL");
-              setAttached(true)
-            }}
-            style={{
-              height: 600,
-            }}
-            disablewebsecurity={true}
-          />
-        }
-      </Paper>
+      </Typography>
+      <Grid container style={{ flexGlow: 1 }} spacing={2}>
+
+        <Grid item xs={10}>
+          <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
+            {toggleView &&
+              <ElectronBrowserView
+                className="browser"
+                preload={preload}
+                // Keep instance reference so we can execute methods
+                ref={(viewRef) => {
+                  view = viewRef
+                }}
+                src={urls[url]}
+                devtools={devTools}
+                onDidFinishLoad={() => {
+                  setAttached(true)
+                  console.log("onDomReady");
+                }}
+                onDidAttach={() => {
+                  // setAttached(true)
+                  console.log("BrowserView attached");
+                }}
+                onUpdateTargetUrl={() => {
+                  console.log("Updated Target URL");
+                  setAttached(true)
+                }}
+                style={{
+                  height: 600,
+                }}
+                disablewebsecurity={true}
+              />
+            }
+          </Paper>
+        </Grid>
+
+        <Grid item xs={2}>
+          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, height: 620, }}>
+            <h4 style={{ textAlign: "center" }}>
+              Online Buddies
+            </h4>
+            <Divider />  
+            <List component="nav" style={{padding : 10}}>
+                <ListItemText primary="Trash" />
+                <ListItemText primary="Spam" />
+            </List>
+          </Paper>
+        </Grid>
+
+      </Grid>
     </div>
   )
 }

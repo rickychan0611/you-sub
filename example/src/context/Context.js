@@ -6,6 +6,7 @@ export const Context = createContext()
 
 const ContextProvider = ({ children }) => {
   const [user, setUser] = useState({})
+  const [onlineUsers, setOnlineUsers] = useState([])
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
@@ -35,12 +36,20 @@ const ContextProvider = ({ children }) => {
     })
   }, [])
 
+  useEffect(() => {
+    const online = db.ref('onlineUsers/')
+    online.on('value', (snapshot) => {
+      setOnlineUsers(snapshot.val());
+      console.log(snapshot.val())
+    });
+  }, [user])
 
   return (
     <Context.Provider
       value={
         {
-          user
+          user,
+          onlineUsers, setOnlineUsers
         }
       }
     >
