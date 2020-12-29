@@ -1,14 +1,17 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
-import Home from "../pages/Home";
+import View from "../pages/View";
 import Register from "../pages/Register";
 
 export default (props) => {
     return (
         <Switch>
-            <Route path="/" component={Register} />
-            {/* <Route path="/home" component={Home} /> */}
+            <Route exact path="/">
+                <Redirect to="/register" />
+            </Route>
+            <Route exact path="/register" component={Register} />
+            <Route exact path="/view" component={View} />
         </Switch>
     )
 }

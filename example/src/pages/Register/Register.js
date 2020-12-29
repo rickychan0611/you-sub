@@ -1,69 +1,173 @@
-import React, { useEffect, useState } from 'react'
-import ElectronBrowserView, { removeViews } from '../../../../lib/ElectronBrowserView'
-
-import Button from '@material-ui/core/Button';
+import React, { useState } from 'react'
 import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
+import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { useHistory } from "react-router-dom";
 
 import { db, auth } from "../../../../firebaseApp";
-
-let view;
+var validator = require("email-validator");
 
 // URL we want to toggle between
 const Register = () => {
+  let history = useHistory();
 
-  const email = "r883@gmail.com"
-  const password = "111111"
-  const nickname = "Ricrick"
-  const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A?" + "?sub_confirmation=1"
-  const videoUrl1 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
-  const videoUrl2 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
-  const videoUrl3 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
+  const [userInfo, setUserInfo] = useState({
+    // email: "",
+    // password: "",
+    // nickname: "",
+    // channelUrl: "",
+    // videoUrl1: "",
+    // videoUrl2: "",
+    // videoUrl3: "",
+    email: "sdss44dd11@gmail.com",
+    password: "111111",
+    confirmPassword: "111111",
+    nickname: "ricky",
+    channelUrl: "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
+    videoUrl1: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
+    videoUrl2: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
+    videoUrl3: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
+  })
 
-  const onChange = () => {
+  const [err, setErr] = useState({})
+  const [loading, setLoading] = useState(false)
 
+  // const email = "ddaa33a2383@gmail.com"
+  // const password = "111111"
+  // const nickname = "Ricrick"
+  // const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A" + "?sub_confirmation=1"
+  // const videoUrl1 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
+  // const videoUrl2 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
+  // const videoUrl3 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
+
+  const handleChange = (name, value) => {
+    setUserInfo(prev => ({ ...prev, [name]: value }))
+    console.log(userInfo)
   }
-  
+
   const onSubmit = () => {
-    auth.createUserWithEmailAndPassword(email, password)
-      .then((doc) => {
-        console.log(doc.user.uid)
-        db.ref('users/' + doc.user.uid).set({
-          uid: doc.user.uid,
-          email,
-          password,
-          nickname,
-          channelUrl,
-          videoUrl1,
-          videoUrl2,
-          videoUrl3,
-        })
-      })
+    setErr({})
+    history.push("/view");
+
+    let validate = new Promise((resolve, reject) => {
+      if (!validator.validate(userInfo.email)) {
+        setErr(prev => ({ ...prev, email: "Not a valid email address" }))
+        reject()
+      }
+
+      if (!userInfo.email) {
+        setErr(prev => ({ ...prev, email: "Required" }))
+        reject()
+      }
+      if (!userInfo.password) {
+        setErr(prev => ({ ...prev, password: "Required" }))
+        reject()
+      }
+      if (!userInfo.nickname) {
+        setErr(prev => ({ ...prev, nickname: "Required" }))
+        reject()
+      }
+      if (!userInfo.channelUrl) {
+        setErr(prev => ({ ...prev, channelUrl: "Required" }))
+        reject()
+      }
+      if (!userInfo.videoUrl1) {
+        setErr(prev => ({ ...prev, videoUrl1: "Required" }))
+        reject()
+      }
+      if (userInfo.password !== userInfo.confirmPassword) {
+        setErr(prev => ({ ...prev, confirmPassword: "Passwords don't match" }))
+        reject()
+      }
+      else resolve()
+    })
+
+
+    // validate.then(() => {
+    //   setLoading(true)
+    //   auth.createUserWithEmailAndPassword(userInfo.email, userInfo.password)
+    //     .then((doc) => {
+    //       console.log(doc.user.uid)
+    //       db.ref('users/' + doc.user.uid).set({ uid: doc.user.uid, ...userInfo })
+    //         .then(() => {
+    //           console.log("Done")
+    //           setLoading(false)
+    //         })
+    //     })
+    //     .catch((err) => {
+    //       console.log(err)
+    //       setErr(prev => ({ ...prev, email: err.message }))
+    //       setLoading(false)
+    //     })
+    // })
+    // .catch((err) => {
+    //   console.log(err)
+    //   // setErr(prev => ({ ...prev, email: err }))
+    //   setLoading(false)
+    // })
+
+    // validate.catch(() => {
+    //   setLoading(false)
+    //   console.log(err)
+    //   history.push("/view");
+    // })
   }
 
   return (
 
-    <div style={{ margin: 50}}>
-              <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold"}}  gutterBottom>Step 1: Register</Typography>
-          <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
-            <form noValidate autoComplete="off">
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your E-mail" />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Password" />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Confirm Password" />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your nickname " />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your Youtube channel URL" fullWidth 
-              helperText="How to find the URL? 1. On youtube's website, click on your profile picture. 2. Click on 'Your channel' 3. Copy and paste the url from the address bar"/>
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #1" fullWidth />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #2" fullWidth />
-              <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #3" fullWidth 
-              helperText="The videos that you want people to watch. They will be fed randomly to each person."/>
-            </form>
-            <Button style={{ margin: 8 }} variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button><br />
-          </Paper>
+    <div style={{ margin: 50 }}>
+      <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>Step 1: Register</Typography>
+      <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
+        <form noValidate autoComplete="off">
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your E-mail" fullWidth required
+            onChange={(event) => { handleChange('email', event.target.value) }}
+            helperText={err.email} error={err.email && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Password" fullWidth required
+            onChange={(event) => { handleChange('password', event.target.value) }}
+            helperText={err.password} error={err.password && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Confirm Password" fullWidth required
+            onChange={(event) => { handleChange('confirmPassword', event.target.value) }}
+            helperText={err.confirmPassword} error={err.confirmPassword && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your nickname " fullWidth required
+            onChange={(event) => { handleChange('nickname', event.target.value) }}
+            helperText={err.nickname} error={err.nickname && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your Youtube channel URL" fullWidth required
+            onChange={(event) => { handleChange('channelUrl', event.target.value) }}
+            helperText={err.channelUrl} error={err.channelUrl && true}
+          />
+          <br />
+          <div style={{ fontSize: 12, paddingLeft: 15, marginBottom: 10, color: "grey" }}>
+            Where to find your channel URL? <br />
+             1.On youtube's website, click on your profile picture. 2.Click on "Your channel" 3.Copy and paste the url from the address bar of your browser</div>
+
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #1" fullWidth required
+            onChange={(event) => { handleChange('videoUrl1', event.target.value) }}
+            helperText={err.videoUrl1} error={err.videoUrl1 && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #2" fullWidth
+            onChange={(event) => { handleChange('videoUrl2', event.target.value) }}
+            helperText={err.videoUrl2} error={err.videoUrl2 && true}
+          />
+          <TextField style={{ margin: 8 }} variant="outlined" label="Your Video's URL #3" fullWidth
+            onChange={(event) => { handleChange('videoUrl3', event.target.value) }}
+            helperText={err.videoUrl3} error={err.videoUrl3 && true}
+          />
+          <br />
+          <div style={{ fontSize: 12, paddingLeft: 15, marginBottom: 30, color: "grey" }}>
+            These are the videos that you want to boost views. They will be fed to subscribers randomly.
+          </div>
+        </form>
+        <Box display="flex" justifyContent="flex-end">
+          <Button startIcon={loading && <CircularProgress color="inherit" size={14} />} style={{ margin: 8 }} variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button><br />
+        </Box>
+      </Paper>
 
     </div>
   )
