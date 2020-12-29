@@ -6,9 +6,19 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useHistory } from "react-router-dom";
+import passwordValidator from 'password-validator';
 
 import { db, auth } from "../../../../firebaseApp";
 var validator = require("email-validator");
+
+var schema = new passwordValidator();
+schema
+  .is().min(6)                                    // Minimum length 8
+  .is().max(100)                                  // Maximum length 100
+  .has().uppercase()                              // Must have uppercase letters
+  .has().lowercase()                              // Must have lowercase letters
+  .has().digits(2)                                // Must have at least 2 digits
+  .has().not().spaces()                           // Should not have spaces
 
 // URL we want to toggle between
 const Register = () => {
@@ -22,20 +32,20 @@ const Register = () => {
     // videoUrl1: "",
     // videoUrl2: "",
     // videoUrl3: "",
-    email: "sdss44dd11@gmail.com",
+    email: "3f4433m1@gmail.com",
     password: "111111",
     confirmPassword: "111111",
-    nickname: "ricky",
+    nickname: "yooMan",
     channelUrl: "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
-    videoUrl1: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
-    videoUrl2: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
+    videoUrl1: "https://www.youtube.com/watch?v=iS5jqXWECbI",
+    videoUrl2: "https://www.youtube.com/watch?v=8usxs5F8CG0",
     videoUrl3: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
   })
 
   const [err, setErr] = useState({})
   const [loading, setLoading] = useState(false)
 
-  // const email = "ddaa33a2383@gmail.com"
+  // const email = "dda22383@gmail.com"
   // const password = "111111"
   // const nickname = "Ricrick"
   // const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A" + "?sub_confirmation=1"
@@ -44,7 +54,10 @@ const Register = () => {
   // const videoUrl3 = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
 
   const handleChange = (name, value) => {
-    setUserInfo(prev => ({ ...prev, [name]: value }))
+    if (name === "channelUrl") {
+      setUserInfo(prev => ({ ...prev, "channelUrl": value + "?sub_confirmation=1" }))
+    }
+    else setUserInfo(prev => ({ ...prev, [name]: value }))
     console.log(userInfo)
   }
 
@@ -78,6 +91,10 @@ const Register = () => {
         setErr(prev => ({ ...prev, videoUrl1: "Required" }))
         reject()
       }
+      if (!schema.validate(userInfo.password)) {
+        setErr(prev => ({ ...prev, password: "Must be at least 6 characters with 1 uppercase letter and 2 digits" }))
+        reject()
+      }
       if (userInfo.password !== userInfo.confirmPassword) {
         setErr(prev => ({ ...prev, confirmPassword: "Passwords don't match" }))
         reject()
@@ -86,34 +103,35 @@ const Register = () => {
     })
 
 
-    // validate.then(() => {
-    //   setLoading(true)
-    //   auth.createUserWithEmailAndPassword(userInfo.email, userInfo.password)
-    //     .then((doc) => {
-    //       console.log(doc.user.uid)
-    //       db.ref('users/' + doc.user.uid).set({ uid: doc.user.uid, ...userInfo })
-    //         .then(() => {
-    //           console.log("Done")
-    //           setLoading(false)
-    //         })
-    //     })
-    //     .catch((err) => {
-    //       console.log(err)
-    //       setErr(prev => ({ ...prev, email: err.message }))
-    //       setLoading(false)
-    //     })
-    // })
-    // .catch((err) => {
-    //   console.log(err)
-    //   // setErr(prev => ({ ...prev, email: err }))
-    //   setLoading(false)
-    // })
+    validate.then(() => {
+      
+      setLoading(true)
+      auth.createUserWithEmailAndPassword(userInfo.email, userInfo.password)
+        .then((doc) => {
+          console.log(doc.user.uid)
+          db.ref('users/' + doc.user.uid).update({ uid: doc.user.uid, ...userInfo })
+            .then(() => {
+              console.log("Done")
+              setLoading(false)
+            })
+        })
+        .catch((err) => {
+          console.log(err)
+          setErr(prev => ({ ...prev, email: err.message }))
+          setLoading(false)
+        })
+    })
+    .catch((err) => {
+      console.log(err)
+      // setErr(prev => ({ ...prev, email: err }))
+      setLoading(false)
+    })
 
-    // validate.catch(() => {
-    //   setLoading(false)
-    //   console.log(err)
-    //   history.push("/view");
-    // })
+    validate.catch(() => {
+      setLoading(false)
+      console.log(err)
+      history.push("/view");
+    })
   }
 
   return (

@@ -82,8 +82,6 @@ const View = () => {
   }
 
   ipcMain.on('query', function (event, value) {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!")
-    console.log(value);
     if (value === "youtubeLogedIn") {
       setYoutubeLogedIn(true)
     }
@@ -165,13 +163,15 @@ const View = () => {
         <Grid item xs={2}>
           <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, height: 620, }}>
             <h4 style={{ textAlign: "center" }}>
-              Online Buddies
+              Online Buddies({onlineUsers.length})
             </h4>
             <Divider />  
             <List component="nav" style={{padding : 10}}>
-                <ListItemText primary="Trash" />
-                <ListItemText primary="Spam" />
-                <ListItemText primary="Spam" />
+              {onlineUsers && onlineUsers.map((item)=>{
+                return(
+                <ListItemText key={item.uid} primary={item.nickname} />
+                )
+              })}
             </List>
           </Paper>
         </Grid>

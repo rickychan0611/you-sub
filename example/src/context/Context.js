@@ -37,12 +37,16 @@ const ContextProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
+    let userArr;
     const online = db.ref('onlineUsers/')
     online.on('value', (snapshot) => {
-      setOnlineUsers(snapshot.val());
-      console.log(snapshot.val())
+      if (snapshot.val()) {
+        userArr = Object.values(snapshot.val())
+        setOnlineUsers(userArr);
+        console.log(userArr)
+      }
     });
-  }, [user])  
+  }, [])
 
   return (
     <Context.Provider

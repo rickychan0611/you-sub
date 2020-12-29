@@ -9,6 +9,7 @@ function createWindow () {
   mainWindow.loadURL('http://localhost:3000')
   mainWindow.on('closed', () => (mainWindow = null))
   mainWindow.webContents.openDevTools()
+  mainWindow.maximize();
 }
 
 app.on('ready', createWindow)
