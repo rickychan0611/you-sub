@@ -42,13 +42,13 @@ const ContextProvider = ({ children }) => {
       setOnlineUsers(snapshot.val());
       console.log(snapshot.val())
     });
-  }, [user])
+  }, [user])  
 
   return (
     <Context.Provider
       value={
         {
-          user,
+          user, setUser,
           onlineUsers, setOnlineUsers
         }
       }
