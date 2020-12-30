@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import ElectronBrowserView from '../../../../lib/ElectronBrowserView'
+import SetInterval from 'set-interval'
 
 import { useHistory } from "react-router-dom";
 import { db, auth } from "../../../../firebaseApp";
@@ -19,13 +20,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Icon from '@material-ui/core/Icon';
 import { Divider } from '@material-ui/core';
+import { start } from 'repl';
 
+const delay = require('delay');
 
 const preload = resolve('./example/src/preload.js')
 
 var ipcMain = require("electron").remote.ipcMain;
-
-
 
 let view;
 // URL we want to toggle between
@@ -40,17 +41,15 @@ const View = () => {
 
   const [url, setUrl] = useState(0)
 
+  const [stop, setStop] = useState(true)
+  const [subing, setSubing] = useState(false)
+  const [counter, setCounter] = useState(0)
   const [attached, setAttached] = useState(false)
-  const [devTools, setDevTools] = useState(true)
+  const [devTools, setDevTools] = useState(false)
   const [toggleView, setToggleView] = useState(true)
   const [youtubeLogedIn, setYoutubeLogedIn] = useState(false)
-
-  const clickSub = (button) => {
-    console.log(button, "This loads no problem!");
-    setTimeout(() => {
-      button.click()
-    }, 2000)
-  }
+  const [subscribed, setSubscribed] = useState(false)
+  const [urlToPlay, setUrlToPlay] = useState("https://www.youtube.com/")
 
   const switchURL = () => {
     setAttached(false)
@@ -63,55 +62,94 @@ const View = () => {
     })
   }
 
-  const email = "ri331s3@gmail.com"
-  const password = "111111"
-  const nickname = "Ricrick"
-  const channelUrl = "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A?" + "?sub_confirmation=1"
-  const videoUrl = "https://www.youtube.com/watch?v=DQHhLBJJtoE"
-
-  const onSubmit = () => {
-    auth.createUserWithEmailAndPassword(email, password)
-      .then((doc) => {
-        console.log(doc.user.uid)
-        db.ref('users/' + doc.user.uid).set({
-          uid: doc.user.uid,
-          email,
-          password,
-          nickname,
-          channelUrl,
-          videoUrl
-        })
-      })
-  }
-
-  ipcMain.on('query', function (event, value) {
+  ipcMain.on('youtubelogin', function (event, value) {
     if (value === "youtubeLogedIn") {
       setYoutubeLogedIn(true)
     }
     else setYoutubeLogedIn(false)
   });
 
+  ipcMain.on('subscribed', function (event, value) {
+    if (value === "subscribed") {
+      setSubscribed(true)
+      console.log("ipc subscribed done")
+    }
+  });
+
+  const stopWatch = () => {
+    setCounter(prev => {
+      console.log(prev - 1)
+      return prev - 1
+    })
+  }
+
+  ///<---------auto task--------->///
+  let COUNTERDOWN = 10 * 100
+
+  const startPlaying = async () => {
+
+    let run = new Promise(async (resolve, reject) => {
+      setSubscribed(false)
+      setCounter(5)
+      setSubing(false)
+      SetInterval.start(stopWatch, 1000, 'stopWatch')
+
+      let random = Math.floor(Math.random() * (onlineUsers.length))
+
+      setUrlToPlay(onlineUsers[random].videoUrl1)
+
+      await delay(5000)
+
+      // SetInterval.clear('stopWatch')
+      setUrlToPlay(onlineUsers[random].channelUrl)
+      
+      setCounter(8)
+      setSubing(true)
+      // SetInterval.start(stopWatch, 1000, 'stopWatch')
+      await delay(8000)
+
+      resolve()
+    })
+
+    run.then(() => {
+      again()
+    })
+  }
+
+  const again = () => {
+    console.log("stop", stop)
+    if (stop) {
+      startPlaying()
+    }
+  }
+
+  const stopPlaying = () => {
+    // SetInterval.clear('autoTasks')
+    // SetInterval.clear('stopWatch')
+    // setStop(true)
+    // setUrlToPlay("https://www.youtube.com/")
+    window.location.reload(false);
+  }
+
+
+  const autoTasks = (random) => {
+    SetInterval.start(stopWatch, 1000, 'stopWatch')
+  }
+
+
   useEffect(() => {
     if (attached) {
-
+      setSubscribed(false)
       // console.log(view)
       view.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.130 Safari/537.36 Edg/78.0.100.0")
       console.log(view.getUserAgent())
-      view.executeJavaScript(`
-      let youtubeAvatar = document.getElementById("avatar-btn");
-
-      let button = document.getElementById("confirm-button");
-      console.log(button, "This loads no problem!");
-      setTimeout(()=>{
-        button.click()
-      },2000)
-    `)
     }
   }, [attached])
 
-  // useEffect(()=>{
-  //   return () => removeViews();
-  // },[])
+  useEffect(() => {
+    setStop(prev => prev)
+    console.log("stop", stop)
+  }, [stop])
 
   return (
 
@@ -131,35 +169,60 @@ const View = () => {
             });
           }}>Sign Out</Button><br />
       </Box>
-      <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>
+      <div style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} >
         {youtubeLogedIn ?
-          <Box style={{ color: "grey" }}>
-            Ready...
-            <Button
-            style={{margin: 10, backgroundColor: "#2cbf2c", color:"white", fontWeight: "bold"}}
-              variant="contained"
-              endIcon={<Icon fontSize="large">play_arrow</Icon>}
-              fontSize="large"
-            >
-              Start
-      </Button>
-          </Box>
-          :
+
           <>
+            {stop ? <>
+              <Box style={{ color: "grey" }}>
+                Ready...
+                <Button
+                  style={{ margin: 10, backgroundColor: "#2cbf2c", color: "white", fontWeight: "bold" }}
+                  variant="contained"
+                  endIcon={<Icon fontSize="large">play_arrow</Icon>}
+                  fontSize="large"
+                  onClick={() => {
+                    setStop(prev => !prev)
+                    startPlaying()
+                  }}
+                >
+                  Start
+               </Button>
+              </Box>
+            </>
+              :
+              <>
+                <Box style={{ color: "grey" }}>
+                  {subing ? "Subscribing " : "Next Video in "} {counter} sec
+                  <Button
+                    style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
+                    variant="contained"
+                    endIcon={<Icon fontSize="large">stop</Icon>}
+                    fontSize="large"
+                    onClick={() => { stopPlaying() }}
+                  >
+                    Stop
+                  </Button>
+                </Box>
+              </>
+            }
+          </>
+          :
+          <div>
             Please login to your youtube account below <br />
             <div style={{ color: "grey" }}>
               Waiting...
             </div>
-          </>
+          </div>
         }
-      </Typography>
+      </div>
       <Grid container style={{ flexGlow: 1 }} spacing={2}>
 
         <Grid item xs={10}>
           <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
             {toggleView &&
               <ElectronBrowserView
-                src={urls[url]}
+                src={urlToPlay}
                 className="browser"
                 preload={preload}
                 // Keep instance reference so we can execute methods
@@ -167,17 +230,17 @@ const View = () => {
                   view = viewRef
                 }}
                 devtools={devTools}
-                onDidFinishLoad={() => {
-                  setAttached(true)
-                  console.log("onDomReady");
-                }}
                 onDidAttach={() => {
-                  // setAttached(true)
+                  setAttached(true)
                   console.log("BrowserView attached");
                 }}
                 onUpdateTargetUrl={() => {
-                  console.log("Updated Target URL");
-                  setAttached(true)
+                  // console.log("Updating url");
+                  // setAttached(false)
+                }}
+                onDidFinishLoad={() => {
+                  // setAttached(true)
+                  // console.log("Updated url");
                 }}
                 style={{
                   height: 600,
