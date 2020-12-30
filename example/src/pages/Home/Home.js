@@ -30,7 +30,8 @@ const Home = () => {
     setUserInfo(prev => ({ ...prev, [name]: value }))
   }
 
-  const onSubmit = () => {
+  const onSubmit = (e) => {
+    e.preventDefault()
     setErr({})
 
     let validate = new Promise((resolve, reject) => {
@@ -90,17 +91,24 @@ const Home = () => {
         <Box style={{ paddingLeft: "30%", paddingRight: "30%" }}>
           <Typography style={{ marginBottom: 10, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>
             Sign in</Typography>
-          <TextField style={{ margin: 8 }} variant="outlined" label="Your E-mail" fullWidth required
-            onChange={(event) => { handleChange('email', event.target.value) }}
-            helperText={err.email} error={err.email && true}
-          />
-          <TextField style={{ margin: 8 }} variant="outlined" label="Password" fullWidth required
-            onChange={(event) => { handleChange('password', event.target.value) }}
-            helperText={err.password} error={err.password && true}
-          />
+
+          <form id="signin" onSubmit={onSubmit}>
+            <TextField style={{ margin: 8 }} variant="outlined" label="Your E-mail" fullWidth required
+              onChange={(event) => { handleChange('email', event.target.value) }}
+              helperText={err.email} error={err.email && true}
+            />
+            <TextField style={{ margin: 8 }} variant="outlined" label="Password" fullWidth required
+              onChange={(event) => { handleChange('password', event.target.value) }}
+              helperText={err.password} error={err.password && true}
+            />
+          </form>
+
         </Box>
         <Box display="flex" justifyContent="center">
-          <Button startIcon={loading && <CircularProgress color="inherit" size={14} />} style={{ margin: 8 }} variant="contained" color="primary" onClick={() => onSubmit()}>Submit</Button>
+          <Button type="submit" form="signin"
+            startIcon={loading && <CircularProgress color="inherit" size={14} />}
+            style={{ margin: 8 }} variant="contained" color="primary">
+            Submit</Button>
         </Box>
         <Box display="flex" justifyContent="center">
           <Link to="/register">

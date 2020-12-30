@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react'
 import { db, auth } from "../../../firebaseApp"
 import firebase from "firebase/app";
 import { useHistory, Link } from "react-router-dom";
+import settings from 'electron-settings';
 
 export const Context = createContext()
 
@@ -30,6 +31,8 @@ const ContextProvider = ({ children }) => {
               onlineUsersRef.onDisconnect().remove();
             }
           });
+
+          history.push('/view')
         })
       }
       else {

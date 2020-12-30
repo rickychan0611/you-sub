@@ -7,6 +7,6 @@ window.onload = () => {
     console.log('window onload', youtubeAvatar)
     var ipcRenderer = require('electron').ipcRenderer;
     ipcRenderer.send('query', youtubeAvatar !== null ? "youtubeLogedIn" : "no");
-  }, [1200])
+  }, [2500])
 };
  

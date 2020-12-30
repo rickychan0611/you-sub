@@ -25,21 +25,21 @@ const Register = () => {
   let history = useHistory();
 
   const [userInfo, setUserInfo] = useState({
-    // email: "",
-    // password: "",
-    // nickname: "",
-    // channelUrl: "",
-    // videoUrl1: "",
-    // videoUrl2: "",
-    // videoUrl3: "",
-    email: "3f4433m1@gmail.com",
-    password: "111111",
-    confirmPassword: "111111",
-    nickname: "yooMan",
-    channelUrl: "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
-    videoUrl1: "https://www.youtube.com/watch?v=iS5jqXWECbI",
-    videoUrl2: "https://www.youtube.com/watch?v=8usxs5F8CG0",
-    videoUrl3: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
+    email: "",
+    password: "",
+    nickname: "",
+    channelUrl: "",
+    videoUrl1: "",
+    videoUrl2: "",
+    videoUrl3: "",
+    // email: "3f4433m1@gmail.com",
+    // password: "111111",
+    // confirmPassword: "111111",
+    // nickname: "yooMan",
+    // channelUrl: "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
+    // videoUrl1: "https://www.youtube.com/watch?v=iS5jqXWECbI",
+    // videoUrl2: "https://www.youtube.com/watch?v=8usxs5F8CG0",
+    // videoUrl3: "https://www.youtube.com/watch?v=DQHhLBJJtoE",
   })
 
   const [err, setErr] = useState({})
@@ -63,7 +63,7 @@ const Register = () => {
 
   const onSubmit = () => {
     setErr({})
-    history.push("/view");
+    // history.push("/view");
 
     let validate = new Promise((resolve, reject) => {
       if (!validator.validate(userInfo.email)) {
@@ -96,7 +96,7 @@ const Register = () => {
         reject()
       }
       if (userInfo.password !== userInfo.confirmPassword) {
-        setErr(prev => ({ ...prev, confirmPassword: "Passwords don't match" }))
+        setErr(prev => ({ ...prev, confirmPassword: "Password confirmation doesn't match Password" }))
         reject()
       }
       else resolve()
@@ -113,6 +113,7 @@ const Register = () => {
             .then(() => {
               console.log("Done")
               setLoading(false)
+              history.push("/view");
             })
         })
         .catch((err) => {
@@ -130,7 +131,7 @@ const Register = () => {
     validate.catch(() => {
       setLoading(false)
       console.log(err)
-      history.push("/view");
+      // history.push("/view");
     })
   }
 

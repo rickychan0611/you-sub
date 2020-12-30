@@ -2,6 +2,10 @@ import React, { useEffect, useState, useContext } from 'react'
 import ElectronBrowserView from '../../../../lib/ElectronBrowserView'
 
 import { useHistory } from "react-router-dom";
+import { db, auth } from "../../../../firebaseApp";
+import { resolve } from 'path'
+import { Context } from '../../context/Context';
+
 
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
@@ -13,11 +17,10 @@ import TextField from '@material-ui/core/TextField';
 import Box from '@material-ui/core/Box';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { db, auth } from "../../../../firebaseApp";
-
-import { resolve } from 'path'
+import Icon from '@material-ui/core/Icon';
 import { Divider } from '@material-ui/core';
-import { Context } from '../../context/Context';
+
+
 const preload = resolve('./example/src/preload.js')
 
 var ipcMain = require("electron").remote.ipcMain;
@@ -119,18 +122,36 @@ const View = () => {
 
       <Box display="flex" justifyContent="flex-end">
         <Button style={{ margin: 8 }} variant="contained" color="primary"
-          onClick={() => { 
-            auth.signOut().then(function() {
+          onClick={() => {
+            auth.signOut().then(function () {
               // Sign-out successful.
               history.push('/')
-            }).catch(function(error) {
+            }).catch(function (error) {
               // An error happened.
             });
-            }}>Sign Out</Button><br />
+          }}>Sign Out</Button><br />
       </Box>
       <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>
-        Step 2: Login your youtube account <br />
-        {youtubeLogedIn ? "Logged in" : "Not Logged in"}
+        {youtubeLogedIn ?
+          <Box style={{ color: "grey" }}>
+            Ready...
+            <Button
+            style={{margin: 10, backgroundColor: "#2cbf2c", color:"white", fontWeight: "bold"}}
+              variant="contained"
+              endIcon={<Icon fontSize="large">play_arrow</Icon>}
+              fontSize="large"
+            >
+              Start
+      </Button>
+          </Box>
+          :
+          <>
+            Please login to your youtube account below <br />
+            <div style={{ color: "grey" }}>
+              Waiting...
+            </div>
+          </>
+        }
       </Typography>
       <Grid container style={{ flexGlow: 1 }} spacing={2}>
 
@@ -138,13 +159,13 @@ const View = () => {
           <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
             {toggleView &&
               <ElectronBrowserView
+                src={urls[url]}
                 className="browser"
                 preload={preload}
                 // Keep instance reference so we can execute methods
                 ref={(viewRef) => {
                   view = viewRef
                 }}
-                src={urls[url]}
                 devtools={devTools}
                 onDidFinishLoad={() => {
                   setAttached(true)
@@ -172,11 +193,11 @@ const View = () => {
             <h4 style={{ textAlign: "center" }}>
               Online Buddies({onlineUsers.length})
             </h4>
-            <Divider />  
-            <List component="nav" style={{padding : 10}}>
-              {onlineUsers && onlineUsers.map((item)=>{
-                return(
-                <ListItemText key={item.uid} primary={item.nickname} />
+            <Divider />
+            <List component="nav" style={{ padding: 10 }}>
+              {onlineUsers && onlineUsers.map((item) => {
+                return (
+                  <ListItemText key={item.uid} primary={item.nickname} />
                 )
               })}
             </List>
