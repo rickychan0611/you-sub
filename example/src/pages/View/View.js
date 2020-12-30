@@ -119,7 +119,14 @@ const View = () => {
 
       <Box display="flex" justifyContent="flex-end">
         <Button style={{ margin: 8 }} variant="contained" color="primary"
-          onClick={() => { history.push('/') }}>Submit</Button><br />
+          onClick={() => { 
+            auth.signOut().then(function() {
+              // Sign-out successful.
+              history.push('/')
+            }).catch(function(error) {
+              // An error happened.
+            });
+            }}>Sign Out</Button><br />
       </Box>
       <Typography style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} gutterBottom>
         Step 2: Login your youtube account <br />

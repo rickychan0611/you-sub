@@ -28,7 +28,6 @@ const Home = () => {
 
   const handleChange = (name, value) => {
     setUserInfo(prev => ({ ...prev, [name]: value }))
-    console.log(userInfo)
   }
 
   const onSubmit = () => {
@@ -54,13 +53,11 @@ const Home = () => {
     validate.then(() => {
       setLoading(true)
 
-      auth.createUserWithEmailAndPassword(userInfo.email, userInfo.password)
+      auth.signInWithEmailAndPassword(userInfo.email, userInfo.password)
         .then((user) => {
           setLoading(false)
-
           console.log("signed in")
-          // Signed in 
-          // ...
+          history.push("/view");
         })
         .catch((error) => {
           setLoading(false)
@@ -75,7 +72,6 @@ const Home = () => {
       // setErr(prev => ({ ...prev, email: error }))
       // history.push("/view");
     })
-
   }
 
   return (

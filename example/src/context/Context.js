@@ -1,12 +1,14 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { db, auth } from "../../../firebaseApp"
 import firebase from "firebase/app";
+import { useHistory, Link } from "react-router-dom";
 
 export const Context = createContext()
 
 const ContextProvider = ({ children }) => {
   const [user, setUser] = useState({})
   const [onlineUsers, setOnlineUsers] = useState([])
+  let history = useHistory();
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
@@ -32,6 +34,7 @@ const ContextProvider = ({ children }) => {
       }
       else {
         console.log("Not logged in")
+        history.push('/')
       }
     })
   }, [])
