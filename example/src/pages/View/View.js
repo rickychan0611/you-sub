@@ -180,7 +180,8 @@ const View = () => {
       {JSON.stringify(filteredUsers.map(item => item.uid))}<br />
       <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
       <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
-      <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>toggleView</Button><br />
+
+      <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>tdoggleView</Button><br />
 
       <Box display="flex" justifyContent="flex-end">
         <Button style={{ margin: 8 }} variant="contained" color="primary"
@@ -195,11 +196,11 @@ const View = () => {
       </Box>
       <div style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} >
 
-      <Box style={{ color: "grey", marginBottom: 40 }}>
-        <span style={{fontSize: 20, }}>You've got 
-        <span style={{fontSize: 24, color: "#f75a4f"}}> {user.views} </span> 
-        subscribers, up and counting!</span>
-      </Box>
+        <Box style={{ color: "grey", marginBottom: 40 }}>
+          <span style={{ fontSize: 20, }}>You've got
+        <span style={{ fontSize: 24, color: "#f75a4f" }}> {user.views} </span>
+            subscribers, up and counting!</span>
+        </Box>
 
         {youtubeLogedIn ?
 
@@ -247,43 +248,60 @@ const View = () => {
           </div>
         }
       </div>
-      <Grid container style={{ flexGlow: 1 }} spacing={2}>
+      <Grid container container
+        direction="row"
+        justify="center"
+        alignItems="center"
+        style={{ flexGlow: 1 }} spacing={2}>
 
-        <Grid item xs={10}>
-          <Paper elevation={3} style={{ padding: 50, paddingRight: 60, marginBottom: 20 }}>
-            {toggleView &&
-              <ElectronBrowserView
-                src={urlToPlay}
-                className="browser"
-                preload={preload}
-                // Keep instance reference so we can execute methods
-                ref={(viewRef) => {
-                  view = viewRef
-                }}
-                devtools={devTools}
-                onDidAttach={() => {
-                  setAttached(true)
-                  console.log("BrowserView attached");
-                }}
-                onUpdateTargetUrl={() => {
-                  // console.log("Updating url");
-                  // setAttached(false)
-                }}
-                onDidFinishLoad={() => {
-                  // setAttached(true)
-                  // console.log("Updated url");
-                }}
-                style={{
-                  height: 600,
-                }}
-                disablewebsecurity={true}
-              />
-            }
+        <Grid item xs={10} 
+        >
+          <Paper elevation={3} style={{ 
+            height: 600, padding: 50, paddingRight: 60, marginBottom: 20,
+             }}>
+            {true ?
+              <div style={{ color: "grey", marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 20, fontWeight: "bold" }} >
+                <span style={{fontSize: 35, color: "red"}}>Congratulation! </span><br/> <br/>
+                You have reached 100 subsribers.<br/> <br/>
+                 However, the free trial is over.<br/> <br/>
+            For only $5, you can reach 1000 subscribers in no time! <br/> <br/>
+            please go to www. to download the full version.
+              </div> :
+              <>
+                {toggleView &&
+                  <ElectronBrowserView
+                    src={urlToPlay}
+                    className="browser"
+                    preload={preload}
+                    // Keep instance reference so we can execute methods
+                    ref={(viewRef) => {
+                      view = viewRef
+                    }}
+                    devtools={devTools}
+                    onDidAttach={() => {
+                      setAttached(true)
+                      console.log("BrowserView attached");
+                    }}
+                    onUpdateTargetUrl={() => {
+                      // console.log("Updating url");
+                      // setAttached(false)
+                    }}
+                    onDidFinishLoad={() => {
+                      // setAttached(true)
+                      // console.log("Updated url");
+                    }}
+                    style={{
+                      height: 600,
+                    }}
+                    disablewebsecurity={true}
+                  />
+                }
+              </>}
           </Paper>
         </Grid>
 
         <Grid item xs={2}>
-          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, height: 620, }}>
+          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
             <h4 style={{ textAlign: "center" }}>
               Online Buddies({onlineUsers.length})
             </h4>
