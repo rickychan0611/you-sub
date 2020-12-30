@@ -8,6 +8,7 @@ export const Context = createContext()
 
 const ContextProvider = ({ children }) => {
   const [user, setUser] = useState({})
+  const [playedUsers, setPlayedUsers] = useState({})
   const [onlineUsers, setOnlineUsers] = useState([])
   let history = useHistory();
 
@@ -16,8 +17,13 @@ const ContextProvider = ({ children }) => {
       if (user) {
         console.log(user.uid)
 
-        db.ref('users/' + user.uid).once('value').then((snapshot) => {
+        db.ref('users/' + user.uid).on('value', (snapshot) => {
           setUser(snapshot.val())
+          console.log(snapshot.val())
+          if (snapshot.val().played) {
+            setPlayedUsers(Object.keys(snapshot.val().played))
+          }
+          else setPlayedUsers([])
 
           var onlineUsersRef = db.ref('onlineUsers/' + user.uid)
           var connectedRef = db.ref('.info/connected');
@@ -59,7 +65,8 @@ const ContextProvider = ({ children }) => {
       value={
         {
           user, setUser,
-          onlineUsers, setOnlineUsers
+          onlineUsers, setOnlineUsers,
+          playedUsers, setPlayedUsers
         }
       }
     >

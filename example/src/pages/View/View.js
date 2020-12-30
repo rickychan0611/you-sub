@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import { db, auth } from "../../../../firebaseApp";
 import { resolve } from 'path'
 import { Context } from '../../context/Context';
-
+import moment from "moment";
 
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
@@ -32,7 +32,7 @@ let view;
 // URL we want to toggle between
 const View = () => {
   let history = useHistory();
-  const { onlineUsers, setOnlineUsers } = useContext(Context)
+  const { user, onlineUsers, playedUsers } = useContext(Context)
 
   const urls = [
     'https://www.youtube.com/channel/UCpqk_tJt2AvGcQm22oQwdtQ?sub_confirmation=1',
@@ -41,6 +41,7 @@ const View = () => {
 
   const [url, setUrl] = useState(0)
 
+  const [filteredUsers, setFilteredUsers] = useState([])
   const [stop, setStop] = useState(true)
   const [subing, setSubing] = useState(false)
   const [counter, setCounter] = useState(0)
@@ -78,62 +79,61 @@ const View = () => {
 
   const stopWatch = () => {
     setCounter(prev => {
-      console.log(prev - 1)
-      return prev - 1
+      // console.log(prev - 1000)
+      return prev - 1000
     })
   }
 
   ///<---------auto task--------->///
-  let COUNTERDOWN = 10 * 100
 
   const startPlaying = async () => {
+    if (filteredUsers && filteredUsers[0]) {
+      let run = new Promise(async (resolve, reject) => {
+        let random = Math.floor(Math.random() * (filteredUsers.length))
 
-    let run = new Promise(async (resolve, reject) => {
-      setSubscribed(false)
-      setCounter(5)
-      setSubing(false)
-      SetInterval.start(stopWatch, 1000, 'stopWatch')
+        setSubscribed(false)
+        setCounter(5000)
+        setSubing(false)
 
-      let random = Math.floor(Math.random() * (onlineUsers.length))
+        SetInterval.start(stopWatch, 1000, 'stopWatch')
 
-      setUrlToPlay(onlineUsers[random].videoUrl1)
+        //TODO. choose video
+        //ToDo. exclude played video. store uid in played list. check b4 playing?
+        console.log("playedUsers", playedUsers)
+        console.log("random id", filteredUsers[random].uid)
 
-      await delay(5000)
+        db.ref('users/' + user.uid + '/played/' + filteredUsers[random].uid).update({ uid: filteredUsers[random].uid })
+        setUrlToPlay(filteredUsers[random].videoUrl1) //play video
 
-      // SetInterval.clear('stopWatch')
-      setUrlToPlay(onlineUsers[random].channelUrl)
-      
-      setCounter(8)
-      setSubing(true)
-      // SetInterval.start(stopWatch, 1000, 'stopWatch')
-      await delay(8000)
+        await delay(5000) // video play time TODO. set 4mins
 
-      resolve()
-    })
+        setUrlToPlay(filteredUsers[random].channelUrl) //subscribe channel
 
-    run.then(() => {
-      again()
-    })
+        setCounter(8000)
+        setSubing(true)
+        await delay(8000)
+
+        resolve()
+      })
+
+      run.then(() => {
+        again()
+      })
+    }
+    else {
+      window.location.reload(false);
+    }
   }
 
   const again = () => {
     console.log("stop", stop)
-    if (stop) {
+    if (stop || !filteredUsers[0]) {
       startPlaying()
     }
   }
 
   const stopPlaying = () => {
-    // SetInterval.clear('autoTasks')
-    // SetInterval.clear('stopWatch')
-    // setStop(true)
-    // setUrlToPlay("https://www.youtube.com/")
     window.location.reload(false);
-  }
-
-
-  const autoTasks = (random) => {
-    SetInterval.start(stopWatch, 1000, 'stopWatch')
   }
 
 
@@ -147,13 +147,36 @@ const View = () => {
   }, [attached])
 
   useEffect(() => {
-    setStop(prev => prev)
-    console.log("stop", stop)
-  }, [stop])
+    console.log("playedUsers", playedUsers)
+    setFilteredUsers([])
+    let tempArr = []
+    let onlineUids = []
+    if (playedUsers[0] && onlineUsers[0]) {
+      tempArr = onlineUsers.filter(onlineUser => !playedUsers.includes(onlineUser.uid));
+      console.log(tempArr)
+      setFilteredUsers(tempArr)
+    }
+    else if (!playedUsers[0]){
+      setFilteredUsers(onlineUsers)
+    }
+    console.log(filteredUsers)
+  }, [onlineUsers])
+
+  // stop will all played
+  // useEffect(() => { 
+  //   if (!filteredUsers || !filteredUsers[0] && !stop) {
+  //     window.location.reload(false);
+  //   }
+  // }, [filteredUsers])
+
+  const timer = (counter) => {
+    return moment.utc(counter).format('mm:ss');
+  }
 
   return (
 
     <div style={{ margin: 50 }}>
+      {JSON.stringify(filteredUsers.map(item=>item.uid))}<br/>
       <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
       <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
       <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>toggleView</Button><br />
@@ -193,7 +216,7 @@ const View = () => {
               :
               <>
                 <Box style={{ color: "grey" }}>
-                  {subing ? "Subscribing " : "Next Video in "} {counter} sec
+                  {subing ? "Subscribing " : "Next Video in "} {timer(counter)}
                   <Button
                     style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
                     variant="contained"
