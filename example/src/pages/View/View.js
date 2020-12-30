@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react'
 import ElectronBrowserView from '../../../../lib/ElectronBrowserView'
 import SetInterval from 'set-interval'
-
+import firebase from 'firebase/app'
 import { useHistory } from "react-router-dom";
 import { db, auth } from "../../../../firebaseApp";
 import { resolve } from 'path'
@@ -108,9 +108,10 @@ const View = () => {
         await delay(5000) // video play time TODO. set 4mins
 
         setUrlToPlay(filteredUsers[random].channelUrl) //subscribe channel
+        db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
 
-        setCounter(8000)
-        setSubing(true)
+        setSubing(true) //change sub text
+        setCounter(8000) //subscribe channel time 8sec
         await delay(8000)
 
         resolve()
@@ -156,7 +157,7 @@ const View = () => {
       console.log(tempArr)
       setFilteredUsers(tempArr)
     }
-    else if (!playedUsers[0]){
+    else if (!playedUsers[0]) {
       setFilteredUsers(onlineUsers)
     }
     console.log(filteredUsers)
@@ -176,7 +177,7 @@ const View = () => {
   return (
 
     <div style={{ margin: 50 }}>
-      {JSON.stringify(filteredUsers.map(item=>item.uid))}<br/>
+      {JSON.stringify(filteredUsers.map(item => item.uid))}<br />
       <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
       <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
       <Button variant="contained" color="primary" onClick={() => setToggleView(!toggleView)}>toggleView</Button><br />
@@ -193,6 +194,13 @@ const View = () => {
           }}>Sign Out</Button><br />
       </Box>
       <div style={{ marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 30, fontWeight: "bold" }} >
+
+      <Box style={{ color: "grey", marginBottom: 40 }}>
+        <span style={{fontSize: 20, }}>You've got 
+        <span style={{fontSize: 24, color: "#f75a4f"}}> {user.views} </span> 
+        subscribers, up and counting!</span>
+      </Box>
+
         {youtubeLogedIn ?
 
           <>

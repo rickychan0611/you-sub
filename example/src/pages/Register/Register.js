@@ -32,6 +32,7 @@ const Register = () => {
     videoUrl1: "",
     videoUrl2: "",
     videoUrl3: "",
+    views: 0
     // email: "3f4433m1@gmail.com",
     // password: "111111",
     // confirmPassword: "111111",
