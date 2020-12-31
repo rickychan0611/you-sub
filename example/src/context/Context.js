@@ -27,7 +27,6 @@ const ContextProvider = ({ children }) => {
 
         db.ref('users/' + user.uid).on('value', (snapshot) => {
           setUser(snapshot.val())
-          console.log(snapshot.val())
           if (snapshot.val().played) {
             setPlayedUsers(Object.keys(snapshot.val().played))
           }
@@ -63,7 +62,6 @@ const ContextProvider = ({ children }) => {
       if (snapshot.val()) {
         userArr = Object.values(snapshot.val())
         setOnlineUsers(userArr);
-        console.log(userArr)
       }
     });
   }, [])
@@ -90,7 +88,7 @@ const ContextProvider = ({ children }) => {
       <h2>Message</h2>
       <p>
 
-      {/* // set level for this user of this verions. FREE Verison */}
+      {/* // set message for this user of this verions. FREE Verison */}
         {admin.v0_1_0 &&
           <div>{Parser(admin.v0_1_0.message)}</div>
         }

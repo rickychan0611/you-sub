@@ -34,7 +34,7 @@ let view;
 // URL we want to toggle between
 const View = () => {
   let history = useHistory();
-  const { user, setUser, onlineUsers, playedUsers, admin } = useContext(Context)
+  const { user, setUser, onlineUsers, admin } = useContext(Context)
 
   const urls = [
     'https://www.youtube.com/channel/UCpqk_tJt2AvGcQm22oQwdtQ?sub_confirmation=1',
@@ -43,7 +43,7 @@ const View = () => {
 
   const [url, setUrl] = useState(0)
 
-  const [filteredUsers, setFilteredUsers] = useState([])
+  // const [filteredUsers, setFilteredUsers] = useState([])
   const [stop, setStop] = useState(true)
   const [subing, setSubing] = useState(false)
   const [counter, setCounter] = useState(0)
@@ -91,9 +91,10 @@ const View = () => {
   }, [user])
   ///<---------auto task--------->///
 
-  let random = Math.floor(Math.random() * (filteredUsers.length))
 
-  const Tasks = () => {
+  const autoWatch = (userToWatch) => {
+    console.log("autoWatch now, run promise")
+    console.log(userToWatch)
     return new Promise(async (resolve, reject) => {
       setSubscribed(false)
       setCounter(5000)
@@ -103,85 +104,116 @@ const View = () => {
 
       //TODO. choose video
       //ToDo. exclude played video. store uid in played list. check b4 playing?
-      console.log("playedUsers", playedUsers)
-      console.log("random id", filteredUsers[random].uid)
 
-      db.ref('users/' + user.uid + '/played/' + filteredUsers[random].uid).update({ uid: filteredUsers[random].uid })
-      setUrlToPlay(filteredUsers[random].videoUrl1) //play video
-
+      db.ref('users/' + user.uid + '/played/' + userToWatch.uid).update({ uid: userToWatch.uid })
+      setUrlToPlay(userToWatch.videoUrl1) //play video
       await delay(5000) // video play time TODO. set 4mins
 
-      setUrlToPlay(filteredUsers[random].channelUrl) //subscribe channel
-      db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
+      setUrlToPlay(userToWatch.channelUrl) //subscribe channel
+      if (userToWatch.uid !== user.uid) {
+        db.ref('users/' + userToWatch.uid).update({ views: firebase.database.ServerValue.increment(1) })
+      }
 
       setSubing(true) //change sub text
       setCounter(8000) //subscribe channel time 8sec
       await delay(8000)
 
+      console.log("Done!!!!!!!!!! autoWatch")
       resolve()
     })
   }
 
-
-  const startPlaying = (views) => {
-    let snapviews = user.views;
-    db.ref('users/' + user.uid + "/views").once('value').then((snapshot) => {
-
-      snapviews = snapshot.val()
-      console.log("snapview", snapviews)
-
-      // if (filteredUsers && filteredUsers[0]) {
-      //   console.log("views", views)
-
-      //   if (views > (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0)) {
-      //     console.log("EEQQQQQQQQQQQQQQ")
-      //     // db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
-      //   }
-      if (snapviews < admin.v0_1_0.maxViews) {
-
-        Tasks().then(() => {
-
-          console.log("snapviews", snapviews)
-
-          if (snapviews >= admin.v0_1_0.maxViews) {
-            again()
-          }
-          else {
-            window.location.reload(false);
-          }
-
-        })
-      }
-
-    })
+  const repeatPlaying = async () => {
+    console.log("again")
+    SetInterval.clear('stopWatch')
+    setCounter(0)
+    console.log("start repeating")
+    await delay(2000)
+    console.log("repeating now")
+    startPlaying(user.views)
   }
 
+  const startPlaying = async (views) => {
+
+    let snapviews = await db.ref('users/' + user.uid + "/views").once('value').then((snapshot) => snapshot.val())
+    console.log("snapviews", snapviews)
+
+    let onlineUsers = await db.ref('onlineUsers/').once('value').then((snapshot) => snapshot.val())
+    onlineUsers = onlineUsers && Object.values(onlineUsers)
+    console.log("onlineUsers", onlineUsers)
+
+    let playedUsers = await db.ref('users/' + user.uid + "/played").once('value').then((snapshot) => snapshot.val())
+    playedUsers = playedUsers && Object.values(playedUsers)
+
+    console.log("playedUsers", playedUsers)
+
+    // let filteredUsers = []
+    // if (playedUsers && playedUsers[0]) {
+
+    //   online
+
+    //   // let tempArr
+    //   // onlineUsers.map(onlineUser=>{
+    //   //   console.log("On ",onlineUser.uid)
+    //   //   playedUsers.map(playedUser=>{
+    //   //     console.log("PL ", playedUser.uid)
+    //   //     if
+    //   //   })
+    //   // })
 
 
-  // run.then(() => {
-  //   SetInterval.clear('stopWatch')
-  //   console.log("done")
-  //   console.log(user.views)
-  //   console.log(views)
-  //   return
-  // })
-  // run.catch(() => {
-  //   window.location.reload(false);
-  // })
+    //   filteredUsers = onlineUsers.filter(onlineUser => !playedUsers.includes((user)=>user.uid === onlineUser.uid))
+    //   console.log("filteredUsers", filteredUsers)
+    // }
+    // else {
+    //   // filteredUsers = onlineUsers
+    // }
 
-  //   console.log("QQQQQQQQQQQQQQQQQQQ", user.views)
-  //   SetInterval.clear('stopWatch')
-  // }
-  // else {
-  //   alert("Oops, you have watched all online buddies' video. Please wait for new bubbies to be online and try again. You may share this app to get more people online.")
-  //   window.location.reload(false);
-  // }
-  // }
+    let random = 0;
+    let check = true
+    let i = 1;
+    // find if now playing id is not in played list
+    await new Promise((resolve, reject) => { 
 
-  const again = () => {
+      while (i <= onlineUsers.length && check === true) { 
+        random = Math.floor(Math.random() * (onlineUsers.length))
+        if (!playedUsers){
+          check = false
+          resolve()
+        }
 
-    startPlaying(user.views)
+        else if (onlineUsers[random].uid !== user.uid) { //is it urself?
+          let arr = playedUsers.map(user => { //find the id
+            if (user.uid === onlineUsers[random].uid) {
+              return 1 
+            }
+          })
+          check = arr.includes(1) //can't found it, loop break, id ok
+          i++
+        }  
+      }
+      resolve()
+    })
 
+    // check is false = all user in played list
+    if (check){
+      console.log("All video has been watched, watching old video")
+    }
+    else {
+      console.log("watching a NEW video")
+    }
+
+
+    // console.log("random", random)
+    // console.log("onlineUsers", onlineUsers[random])
+    // console.log("filteredUsers", filteredUsers[random])
+
+    if (snapviews < admin.v0_1_0.maxViews) {
+      // console.log("go to autoWatch")
+      // console.log(filteredUsers.length === 1 ? "ONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" : "!!!!!!!ONLINE")
+      autoWatch(onlineUsers[random])
+        .then(() => { repeatPlaying() })
+    }
   }
 
   const stopPlaying = () => {
@@ -198,21 +230,25 @@ const View = () => {
     }
   }, [attached])
 
-  useEffect(() => {
-    console.log("playedUsers", playedUsers)
-    setFilteredUsers([])
-    let tempArr = []
-    let onlineUids = []
-    if (playedUsers[0] && onlineUsers[0]) {
-      tempArr = onlineUsers.filter(onlineUser => !playedUsers.includes(onlineUser.uid));
-      console.log(tempArr)
-      setFilteredUsers(tempArr)
-    }
-    else if (!playedUsers[0]) {
-      setFilteredUsers(onlineUsers)
-    }
-    console.log(filteredUsers)
-  }, [onlineUsers])
+  // const getFilteredUsers = () => {
+  //   console.log("playedUsers", playedUsers)
+  //   setFilteredUsers([])
+  //   let tempArr = []
+  //   let onlineUids = []
+  //   if (playedUsers[0] && onlineUsers[0]) {
+  //     tempArr = onlineUsers.filter(onlineUser => !playedUsers.includes(onlineUser.uid));
+  //     console.log(tempArr)
+  //     setFilteredUsers(tempArr)
+  //   }
+  //   else if (!playedUsers[0]) {
+  //     setFilteredUsers(onlineUsers)
+  //   }
+  //   console.log("filteredUsers", filteredUsers)
+  // }
+
+  // useEffect(() => {
+  //   getFilteredUsers()
+  // }, [onlineUsers])
 
 
   let myviews;
@@ -228,22 +264,22 @@ const View = () => {
     return moment.utc(counter).format('mm:ss');
   }
 
-  const level = () => {
+  const level = (level) => {
     // 👑💎🥇⭐️
 
-    if (user.level === 0) {
+    if (level === 0) {
       return "🙂 "
     }
 
-    else if (user.level === 1) {
+    else if (level === 1) {
       return "⭐️ "
     }
 
-    else if (user.level === 2) {
+    else if (level === 2) {
       return "💎 "
     }
 
-    else if (user.level === 3) {
+    else if (level === 3) {
       return "👑 "
     }
 
@@ -256,7 +292,7 @@ const View = () => {
   return (
 
     <div style={{ margin: 50 }}>
-      {JSON.stringify(filteredUsers.map(item => item.uid))}<br />
+      {/* {JSON.stringify(filteredUsers.map(item => item.uid))}<br /> */}
       <Button variant="contained" color="primary" onClick={() => setDevTools(!devTools)}>Toggle DevTools</Button><br />
       <Button variant="contained" color="primary" onClick={() => switchURL()}>Switch URL</Button><br />
 
@@ -285,142 +321,149 @@ const View = () => {
         {user.views < (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) && <>
 
           {youtubeLogedIn ?
+            // {/* {true ? */ }
             <>
-              {stop ? <>
-                <Box style={{ color: "grey" }}>
+            { stop?<>
+                < Box style={{ color: "grey" }}>
                   Ready...
                 <Button
-                    style={{ margin: 10, backgroundColor: "#2cbf2c", color: "white", fontWeight: "bold" }}
-                    variant="contained"
-                    endIcon={<Icon fontSize="large">play_arrow</Icon>}
-                    fontSize="large"
-                    onClick={() => {
-                      setStop(prev => !prev)
-                      startPlaying(user.views)
-                    }}
-                  >
-                    Start
+            style={{ margin: 10, backgroundColor: "#2cbf2c", color: "white", fontWeight: "bold" }}
+            variant="contained"
+            endIcon={<Icon fontSize="large">play_arrow</Icon>}
+            fontSize="large"
+            onClick={() => {
+              setStop(prev => !prev)
+              startPlaying(user.views)
+            }}
+          >
+            Start
                </Button>
-                </Box>
+        </Box>
               </>
                 :
-                <>
-                  <Box style={{ color: "grey" }}>
-                    {subing ? "Subscribing " : "Next Video in "} {timer(counter)}
-                    <Button
-                      style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
-                      variant="contained"
-                      endIcon={<Icon fontSize="large">stop</Icon>}
-                      fontSize="large"
-                      onClick={() => { stopPlaying() }}
-                    >
-                      Stop
+      <>
+        <Box style={{ color: "grey" }}>
+          {subing ? "Subscribing " : "Next Video in "} {timer(counter)}
+          <Button
+            style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
+            variant="contained"
+            endIcon={<Icon fontSize="large">stop</Icon>}
+            fontSize="large"
+            onClick={() => { stopPlaying() }}
+          >
+            Stop
                   </Button>
-                  </Box>
-                </>
+        </Box>
+      </>
               }
             </>
             :
-            <>
-              {
-                // FREE Version
-                // !user.views > (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) &&
-                <div>
-                  Please login to your youtube account below <br />
-                  <div style={{ color: "grey" }}>
-                    Waiting...
+<>
+  {
+    // FREE Version
+    // !user.views > (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) &&
+    <div>
+      Please login to your youtube account below <br />
+      <div style={{ color: "grey" }}>
+        Waiting...
             </div>
-                </div>
-              }
-            </>
+    </div>
+  }
+</>
           }
 
         </>
         }
 
-      </div>
-      <Grid container container
-        // direction="row"
-        // justify="center"
-        // alignItems="flex-start"
-        style={{ flexGlow: 1 }} spacing={2}>
+      </div >
+  <Grid container container
+    // direction="row"
+    // justify="center"
+    // alignItems="flex-start"
+    style={{ flexGlow: 1 }} spacing={2}>
 
-        <Grid item xs={10}
-        >
-          <Paper elevation={3} style={{
-            minHeight: 600, padding: 30, paddingRight: 60, marginBottom: 20,
-          }}>
+    <Grid item xs={10}
+    >
+      <Paper elevation={3} style={{
+        minHeight: 600, padding: 30, paddingRight: 60, marginBottom: 20,
+      }}>
 
-            {/* //FREE */}
-            {user.views >= (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) ?
-              <div style={{ color: "grey", marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 20, fontWeight: "bold" }} >
+        {/* //FREE */}
+        {user.views >= (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) ?
+          <div style={{ color: "grey", marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 20, fontWeight: "bold" }} >
 
-                <img src={congrat} style={{ width: "80%", height: "auto" }} /><br />
+            <img src={congrat} style={{ width: "80%", height: "auto" }} /><br />
                 YEAH! You have reached 100 subscribers!<br /> <br />
                  However, the free trial is now over.<br /> <br />
-                <br /> <br />
+            <br /> <br />
                 To continue to reach 1000 subscribers, <br /> <br />
-                <span
-                  style={{ color: "#7aa7f0", cursor: "pointer" }}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    shell.openExternal("https://www.facebook.com");
-                  }}
-                // onClick={electronOpenLinkInBrowser.bind(this)}
-                >
-                  download the full version.😄😎
+            <span
+              style={{ color: "#7aa7f0", cursor: "pointer" }}
+              onClick={(event) => {
+                event.preventDefault();
+                shell.openExternal("https://www.facebook.com");
+              }}
+            // onClick={electronOpenLinkInBrowser.bind(this)}
+            >
+              download the full version.😄😎
                   </span>
-              </div> :
-              <>
-                {toggleView &&
-                  <ElectronBrowserView
-                    src={urlToPlay}
-                    className="browser"
-                    preload={preload}
-                    // Keep instance reference so we can execute methods
-                    ref={(viewRef) => {
-                      view = viewRef
-                    }}
-                    devtools={devTools}
-                    onDidAttach={() => {
-                      setAttached(true)
-                      console.log("BrowserView attached");
-                    }}
-                    onUpdateTargetUrl={() => {
-                      // console.log("Updating url");
-                      // setAttached(false)
-                    }}
-                    onDidFinishLoad={() => {
-                      // setAttached(true)
-                      // console.log("Updated url");
-                    }}
-                    style={{
-                      height: 600,
-                    }}
-                    disablewebsecurity={true}
-                  />
-                }
-              </>}
-          </Paper>
-        </Grid>
+          </div> :
+          <>
+            {toggleView &&
+              <ElectronBrowserView
+                src={urlToPlay}
+                className="browser"
+                preload={preload}
+                // Keep instance reference so we can execute methods
+                ref={(viewRef) => {
+                  view = viewRef
+                }}
+                devtools={devTools}
+                onDidAttach={() => {
+                  setAttached(true)
+                  console.log("BrowserView attached");
+                }}
+                onUpdateTargetUrl={() => {
+                  // console.log("Updating url");
+                  // setAttached(false)
+                }}
+                onDidFinishLoad={() => {
+                  // setAttached(true)
+                  // console.log("Updated url");
+                }}
+                style={{
+                  height: 600,
+                }}
+                disablewebsecurity={true}
+              />
+            }
+          </>}
+      </Paper>
+    </Grid>
 
-        <Grid item xs={2}>
-          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
-            <h4 style={{ textAlign: "center" }}>
-              Online Buddies({onlineUsers.length})
-            </h4>
-            <Divider />
-            <List component="nav" style={{ padding: 10 }}>
-              {onlineUsers && onlineUsers.map((item) => {
-                return (
-                  <ListItemText key={item.uid} primary={level() + item.nickname} />
-                )
-              })}
-            </List>
-          </Paper>
-        </Grid>
+    <Grid item xs={2}>
+      <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
+        <h4 style={{ textAlign: "center" }}>
+          Online Buddies({onlineUsers.length})
+              <div style={{ fontSize: 12, marginTop: 10 }}>
+            🙂=Free <br />
+              ⭐️=Pro<br />
+              💎=VIP<br />
+              👑=KING<br />
+          </div>
+        </h4>
+        <Divider />
+        <List component="nav" style={{ padding: 10 }}>
+          {onlineUsers && onlineUsers.map((item) => {
+            return (
+              <ListItemText key={item.uid} primary={level(item.level) + item.nickname} />
+            )
+          })}
+        </List>
+      </Paper>
+    </Grid>
 
-      </Grid>
+  </Grid>
     </div >
   )
 }

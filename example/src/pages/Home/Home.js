@@ -56,13 +56,15 @@ const Home = () => {
       setLoading(true)
 
       auth.signInWithEmailAndPassword(userInfo.email, userInfo.password)
-        .then((user) => {
+        .then((doc) => {
+          console.log("signed in user uid:", doc.user.uid)
+          // set level for this user of this verions. FREE Verison
+          db.ref("/users/"+doc.user.uid).update({level: 0})
+
           setLoading(false)
           console.log("signed in")
           history.push("/view");
 
-          // set level for this user of this verions. FREE Verison
-          db.ref("/users/"+user.uid).update({level: 0})
 
         })
         .catch((error) => {
