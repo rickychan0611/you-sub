@@ -25,6 +25,7 @@ const Home = () => {
   const [err, setErr] = useState({})
   const [loading, setLoading] = useState(false)
   const [userInfo, setUserInfo] = useState({})
+  const [open, setOpen] = useState(false);
 
   const handleChange = (name, value) => {
     setUserInfo(prev => ({ ...prev, [name]: value }))
@@ -59,6 +60,7 @@ const Home = () => {
           setLoading(false)
           console.log("signed in")
           history.push("/view");
+          db.ref("/users/"+user.uid).update({level: "0"})
         })
         .catch((error) => {
           setLoading(false)
@@ -75,6 +77,16 @@ const Home = () => {
     })
   }
 
+  // const body = (
+  //   <div style={modalStyle} className={classes.paper}>
+  //     <h2 id="simple-modal-title">Message</h2>
+  //     <p id="simple-modal-description">
+  //       {admin.message}
+  //     </p>
+  //     <SimpleModal />
+  //   </div>
+  // );
+
   return (
 
     <Grid
@@ -84,6 +96,15 @@ const Home = () => {
       alignItems="center"
       style={{ padding: 50 }}
     >
+      {/* <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        {body}
+      </Modal> */}
+
       <Paper elevation={3} style={{ paddingBottom: 50, paddingRight: 60, marginBottom: 20, maxWidth: 800 }}>
         <Box>
           <img src={bgImg} style={{ width: "100%", height: "auto" }} />

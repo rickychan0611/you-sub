@@ -7,7 +7,7 @@ import { db, auth } from "../../../../firebaseApp";
 import { resolve } from 'path'
 import { Context } from '../../context/Context';
 import moment from "moment";
-
+import congrat from '../../assets/congrat.jpg';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -27,6 +27,8 @@ const delay = require('delay');
 const preload = resolve('./example/src/preload.js')
 
 var ipcMain = require("electron").remote.ipcMain;
+var electronOpenLinkInBrowser = require("electron-open-link-in-browser");
+const { shell } = require('electron');
 
 let view;
 // URL we want to toggle between
@@ -174,6 +176,31 @@ const View = () => {
     return moment.utc(counter).format('mm:ss');
   }
 
+  const level = () => {
+    // 👑💎🥇⭐️
+
+    if (user.level === "0"){
+      return "🙂 "
+    }
+
+    else if (user.level === "1"){
+      return "⭐️ "
+    }
+
+    else if (user.level === "2"){
+      return "💎 "
+    }
+    
+    else if (user.level === "3"){
+      return "👑 "
+    }
+    
+    else {
+      return "🙂 "
+    }
+
+  }
+
   return (
 
     <div style={{ margin: 50 }}>
@@ -199,7 +226,7 @@ const View = () => {
         <Box style={{ color: "grey", marginBottom: 40 }}>
           <span style={{ fontSize: 20, }}>You've got
         <span style={{ fontSize: 24, color: "#f75a4f" }}> {user.views} </span>
-            subscribers, up and counting!</span>
+        subscribers and counting!</span>
         </Box>
 
         {youtubeLogedIn ?
@@ -240,87 +267,102 @@ const View = () => {
             }
           </>
           :
-          <div>
-            Please login to your youtube account below <br />
-            <div style={{ color: "grey" }}>
-              Waiting...
+          <>
+            {
+              !user.views > 100 &&
+              <div>
+                Please login to your youtube account below <br />
+                <div style={{ color: "grey" }}>
+                  Waiting...
             </div>
-          </div>
+              </div>
+            }
+          </>
         }
       </div>
       <Grid container container
         direction="row"
         justify="center"
-        alignItems="center"
+        alignItems="flex-start"
         style={{ flexGlow: 1 }} spacing={2}>
 
-        <Grid item xs={10} 
+        <Grid item xs={10}
         >
-          <Paper elevation={3} style={{ 
-            height: 600, padding: 50, paddingRight: 60, marginBottom: 20,
-             }}>
-            {true ?
+          <Paper elevation={3} style={{
+            minHeight: 600, padding: 50, paddingRight: 60, marginBottom: 20,
+          }}>
+            {user.views > 100 ?
               <div style={{ color: "grey", marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 20, fontWeight: "bold" }} >
-                <span style={{fontSize: 35, color: "red"}}>Congratulation! </span><br/> <br/>
-                You have reached 100 subsribers.<br/> <br/>
-                 However, the free trial is over.<br/> <br/>
-            For only $5, you can reach 1000 subscribers in no time! <br/> <br/>
-            please go to www. to download the full version.
+                
+                <img src={congrat} style={{ width: "100%", height: "auto" }}/><br/>
+                YEAH! You have reached 100 subscribers!<br /> <br />
+                 However, the free trial is now over.<br /> <br />
+                <br /> <br />
+                To continue to reach 1000 subscribers, <br /> <br />
+                <span
+                  style={{color: "#7aa7f0", cursor: "pointer"}}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    shell.openExternal("https://www.facebook.com");
+                  }}
+                  // onClick={electronOpenLinkInBrowser.bind(this)}
+                >
+                  download the full version.😄😎
+                  </span>
               </div> :
               <>
-                {toggleView &&
-                  <ElectronBrowserView
-                    src={urlToPlay}
-                    className="browser"
-                    preload={preload}
-                    // Keep instance reference so we can execute methods
-                    ref={(viewRef) => {
-                      view = viewRef
-                    }}
-                    devtools={devTools}
-                    onDidAttach={() => {
-                      setAttached(true)
-                      console.log("BrowserView attached");
-                    }}
-                    onUpdateTargetUrl={() => {
-                      // console.log("Updating url");
-                      // setAttached(false)
-                    }}
-                    onDidFinishLoad={() => {
-                      // setAttached(true)
-                      // console.log("Updated url");
-                    }}
-                    style={{
-                      height: 600,
-                    }}
-                    disablewebsecurity={true}
-                  />
-                }
-              </>}
+            {toggleView &&
+              <ElectronBrowserView
+                src={urlToPlay}
+                className="browser"
+                preload={preload}
+                // Keep instance reference so we can execute methods
+                ref={(viewRef) => {
+                  view = viewRef
+                }}
+                devtools={devTools}
+                onDidAttach={() => {
+                  setAttached(true)
+                  console.log("BrowserView attached");
+                }}
+                onUpdateTargetUrl={() => {
+                  // console.log("Updating url");
+                  // setAttached(false)
+                }}
+                onDidFinishLoad={() => {
+                  // setAttached(true)
+                  // console.log("Updated url");
+                }}
+                style={{
+                  height: 600,
+                }}
+                disablewebsecurity={true}
+              />
+            }
+          </>}
           </Paper>
-        </Grid>
+      </Grid>
 
-        <Grid item xs={2}>
-          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
-            <h4 style={{ textAlign: "center" }}>
-              Online Buddies({onlineUsers.length})
+      <Grid item xs={2}>
+        <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
+          <h4 style={{ textAlign: "center" }}>
+            Online Buddies({onlineUsers.length})
             </h4>
-            <Divider />
-            <List component="nav" style={{ padding: 10 }}>
-              {onlineUsers && onlineUsers.map((item) => {
-                return (
-                  <ListItemText key={item.uid} primary={item.nickname} />
-                )
-              })}
-            </List>
-          </Paper>
-        </Grid>
+          <Divider />
+          <List component="nav" style={{ padding: 10 }}>
+            {onlineUsers && onlineUsers.map((item) => {
+              return (
+                <ListItemText key={item.uid} primary={level() + item.nickname} />
+              )
+            })}
+          </List>
+        </Paper>
+      </Grid>
 
       </Grid>
-    </div>
+    </div >
   )
 }
-
 
 
 export default View
