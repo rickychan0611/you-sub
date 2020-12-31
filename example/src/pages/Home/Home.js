@@ -60,7 +60,10 @@ const Home = () => {
           setLoading(false)
           console.log("signed in")
           history.push("/view");
-          db.ref("/users/"+user.uid).update({level: "0"})
+
+          // set level for this user of this verions. FREE Verison
+          db.ref("/users/"+user.uid).update({level: 0})
+
         })
         .catch((error) => {
           setLoading(false)

@@ -89,6 +89,8 @@ const ContextProvider = ({ children }) => {
     }}>
       <h2>Message</h2>
       <p>
+
+      {/* // set level for this user of this verions. FREE Verison */}
         {admin.v0_1_0 &&
           <div>{Parser(admin.v0_1_0.message)}</div>
         }
@@ -113,7 +115,8 @@ const ContextProvider = ({ children }) => {
         {
           user, setUser,
           onlineUsers, setOnlineUsers,
-          playedUsers, setPlayedUsers
+          playedUsers, setPlayedUsers,
+          admin
         }
       }
     >

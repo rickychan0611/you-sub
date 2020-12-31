@@ -34,7 +34,7 @@ let view;
 // URL we want to toggle between
 const View = () => {
   let history = useHistory();
-  const { user, onlineUsers, playedUsers } = useContext(Context)
+  const { user, setUser, onlineUsers, playedUsers, admin } = useContext(Context)
 
   const urls = [
     'https://www.youtube.com/channel/UCpqk_tJt2AvGcQm22oQwdtQ?sub_confirmation=1',
@@ -86,53 +86,102 @@ const View = () => {
     })
   }
 
+  useEffect(() => {
+    setUser(prev => prev)
+  }, [user])
   ///<---------auto task--------->///
 
-  const startPlaying = async () => {
-    if (filteredUsers && filteredUsers[0]) {
-      let run = new Promise(async (resolve, reject) => {
-        let random = Math.floor(Math.random() * (filteredUsers.length))
+  let random = Math.floor(Math.random() * (filteredUsers.length))
 
-        setSubscribed(false)
-        setCounter(5000)
-        setSubing(false)
+  const Tasks = () => {
+    return new Promise(async (resolve, reject) => {
+      setSubscribed(false)
+      setCounter(5000)
+      setSubing(false)
 
-        SetInterval.start(stopWatch, 1000, 'stopWatch')
+      SetInterval.start(stopWatch, 1000, 'stopWatch')
 
-        //TODO. choose video
-        //ToDo. exclude played video. store uid in played list. check b4 playing?
-        console.log("playedUsers", playedUsers)
-        console.log("random id", filteredUsers[random].uid)
+      //TODO. choose video
+      //ToDo. exclude played video. store uid in played list. check b4 playing?
+      console.log("playedUsers", playedUsers)
+      console.log("random id", filteredUsers[random].uid)
 
-        db.ref('users/' + user.uid + '/played/' + filteredUsers[random].uid).update({ uid: filteredUsers[random].uid })
-        setUrlToPlay(filteredUsers[random].videoUrl1) //play video
+      db.ref('users/' + user.uid + '/played/' + filteredUsers[random].uid).update({ uid: filteredUsers[random].uid })
+      setUrlToPlay(filteredUsers[random].videoUrl1) //play video
 
-        await delay(5000) // video play time TODO. set 4mins
+      await delay(5000) // video play time TODO. set 4mins
 
-        setUrlToPlay(filteredUsers[random].channelUrl) //subscribe channel
-        db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
+      setUrlToPlay(filteredUsers[random].channelUrl) //subscribe channel
+      db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
 
-        setSubing(true) //change sub text
-        setCounter(8000) //subscribe channel time 8sec
-        await delay(8000)
+      setSubing(true) //change sub text
+      setCounter(8000) //subscribe channel time 8sec
+      await delay(8000)
 
-        resolve()
-      })
-
-      run.then(() => {
-        again()
-      })
-    }
-    else {
-      window.location.reload(false);
-    }
+      resolve()
+    })
   }
 
+
+  const startPlaying = (views) => {
+    let snapviews = user.views;
+    db.ref('users/' + user.uid + "/views").once('value').then((snapshot) => {
+
+      snapviews = snapshot.val()
+      console.log("snapview", snapviews)
+
+      // if (filteredUsers && filteredUsers[0]) {
+      //   console.log("views", views)
+
+      //   if (views > (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0)) {
+      //     console.log("EEQQQQQQQQQQQQQQ")
+      //     // db.ref('users/' + filteredUsers[random].uid).update({ views: firebase.database.ServerValue.increment(1) })
+      //   }
+      if (snapviews < admin.v0_1_0.maxViews) {
+
+        Tasks().then(() => {
+
+          console.log("snapviews", snapviews)
+
+          if (snapviews >= admin.v0_1_0.maxViews) {
+            again()
+          }
+          else {
+            window.location.reload(false);
+          }
+
+        })
+      }
+
+    })
+  }
+
+
+
+  // run.then(() => {
+  //   SetInterval.clear('stopWatch')
+  //   console.log("done")
+  //   console.log(user.views)
+  //   console.log(views)
+  //   return
+  // })
+  // run.catch(() => {
+  //   window.location.reload(false);
+  // })
+
+  //   console.log("QQQQQQQQQQQQQQQQQQQ", user.views)
+  //   SetInterval.clear('stopWatch')
+  // }
+  // else {
+  //   alert("Oops, you have watched all online buddies' video. Please wait for new bubbies to be online and try again. You may share this app to get more people online.")
+  //   window.location.reload(false);
+  // }
+  // }
+
   const again = () => {
-    console.log("stop", stop)
-    if (stop || !filteredUsers[0]) {
-      startPlaying()
-    }
+
+    startPlaying(user.views)
+
   }
 
   const stopPlaying = () => {
@@ -165,12 +214,15 @@ const View = () => {
     console.log(filteredUsers)
   }, [onlineUsers])
 
-  // stop will all played
-  // useEffect(() => { 
-  //   if (!filteredUsers || !filteredUsers[0] && !stop) {
-  //     window.location.reload(false);
-  //   }
-  // }, [filteredUsers])
+
+  let myviews;
+  // stop all played
+  useEffect(() => {
+    console.log("userEffect", user.views)
+    myviews = user.views
+  }, [user.views])
+
+
 
   const timer = (counter) => {
     return moment.utc(counter).format('mm:ss');
@@ -179,22 +231,22 @@ const View = () => {
   const level = () => {
     // 👑💎🥇⭐️
 
-    if (user.level === "0"){
+    if (user.level === 0) {
       return "🙂 "
     }
 
-    else if (user.level === "1"){
+    else if (user.level === 1) {
       return "⭐️ "
     }
 
-    else if (user.level === "2"){
+    else if (user.level === 2) {
       return "💎 "
     }
-    
-    else if (user.level === "3"){
+
+    else if (user.level === 3) {
       return "👑 "
     }
-    
+
     else {
       return "🙂 "
     }
@@ -229,135 +281,144 @@ const View = () => {
         subscribers and counting!</span>
         </Box>
 
-        {youtubeLogedIn ?
+        {/* //FREE */}
+        {user.views < (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) && <>
 
-          <>
-            {stop ? <>
-              <Box style={{ color: "grey" }}>
-                Ready...
-                <Button
-                  style={{ margin: 10, backgroundColor: "#2cbf2c", color: "white", fontWeight: "bold" }}
-                  variant="contained"
-                  endIcon={<Icon fontSize="large">play_arrow</Icon>}
-                  fontSize="large"
-                  onClick={() => {
-                    setStop(prev => !prev)
-                    startPlaying()
-                  }}
-                >
-                  Start
-               </Button>
-              </Box>
-            </>
-              :
-              <>
+          {youtubeLogedIn ?
+            <>
+              {stop ? <>
                 <Box style={{ color: "grey" }}>
-                  {subing ? "Subscribing " : "Next Video in "} {timer(counter)}
-                  <Button
-                    style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
+                  Ready...
+                <Button
+                    style={{ margin: 10, backgroundColor: "#2cbf2c", color: "white", fontWeight: "bold" }}
                     variant="contained"
-                    endIcon={<Icon fontSize="large">stop</Icon>}
+                    endIcon={<Icon fontSize="large">play_arrow</Icon>}
                     fontSize="large"
-                    onClick={() => { stopPlaying() }}
+                    onClick={() => {
+                      setStop(prev => !prev)
+                      startPlaying(user.views)
+                    }}
                   >
-                    Stop
-                  </Button>
+                    Start
+               </Button>
                 </Box>
               </>
-            }
-          </>
-          :
-          <>
-            {
-              !user.views > 100 &&
-              <div>
-                Please login to your youtube account below <br />
-                <div style={{ color: "grey" }}>
-                  Waiting...
+                :
+                <>
+                  <Box style={{ color: "grey" }}>
+                    {subing ? "Subscribing " : "Next Video in "} {timer(counter)}
+                    <Button
+                      style={{ margin: 10, backgroundColor: "red", color: "white", fontWeight: "bold" }}
+                      variant="contained"
+                      endIcon={<Icon fontSize="large">stop</Icon>}
+                      fontSize="large"
+                      onClick={() => { stopPlaying() }}
+                    >
+                      Stop
+                  </Button>
+                  </Box>
+                </>
+              }
+            </>
+            :
+            <>
+              {
+                // FREE Version
+                // !user.views > (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) &&
+                <div>
+                  Please login to your youtube account below <br />
+                  <div style={{ color: "grey" }}>
+                    Waiting...
             </div>
-              </div>
-            }
-          </>
+                </div>
+              }
+            </>
+          }
+
+        </>
         }
+
       </div>
       <Grid container container
-        direction="row"
-        justify="center"
-        alignItems="flex-start"
+        // direction="row"
+        // justify="center"
+        // alignItems="flex-start"
         style={{ flexGlow: 1 }} spacing={2}>
 
         <Grid item xs={10}
         >
           <Paper elevation={3} style={{
-            minHeight: 600, padding: 50, paddingRight: 60, marginBottom: 20,
+            minHeight: 600, padding: 30, paddingRight: 60, marginBottom: 20,
           }}>
-            {user.views > 100 ?
+
+            {/* //FREE */}
+            {user.views >= (admin.v0_1_0 ? admin.v0_1_0.maxViews : 0) ?
               <div style={{ color: "grey", marginLeft: 8, marginBottom: 40, textAlign: 'center', fontSize: 20, fontWeight: "bold" }} >
-                
-                <img src={congrat} style={{ width: "100%", height: "auto" }}/><br/>
+
+                <img src={congrat} style={{ width: "80%", height: "auto" }} /><br />
                 YEAH! You have reached 100 subscribers!<br /> <br />
                  However, the free trial is now over.<br /> <br />
                 <br /> <br />
                 To continue to reach 1000 subscribers, <br /> <br />
                 <span
-                  style={{color: "#7aa7f0", cursor: "pointer"}}
+                  style={{ color: "#7aa7f0", cursor: "pointer" }}
                   onClick={(event) => {
                     event.preventDefault();
                     shell.openExternal("https://www.facebook.com");
                   }}
-                  // onClick={electronOpenLinkInBrowser.bind(this)}
+                // onClick={electronOpenLinkInBrowser.bind(this)}
                 >
                   download the full version.😄😎
                   </span>
               </div> :
               <>
-            {toggleView &&
-              <ElectronBrowserView
-                src={urlToPlay}
-                className="browser"
-                preload={preload}
-                // Keep instance reference so we can execute methods
-                ref={(viewRef) => {
-                  view = viewRef
-                }}
-                devtools={devTools}
-                onDidAttach={() => {
-                  setAttached(true)
-                  console.log("BrowserView attached");
-                }}
-                onUpdateTargetUrl={() => {
-                  // console.log("Updating url");
-                  // setAttached(false)
-                }}
-                onDidFinishLoad={() => {
-                  // setAttached(true)
-                  // console.log("Updated url");
-                }}
-                style={{
-                  height: 600,
-                }}
-                disablewebsecurity={true}
-              />
-            }
-          </>}
+                {toggleView &&
+                  <ElectronBrowserView
+                    src={urlToPlay}
+                    className="browser"
+                    preload={preload}
+                    // Keep instance reference so we can execute methods
+                    ref={(viewRef) => {
+                      view = viewRef
+                    }}
+                    devtools={devTools}
+                    onDidAttach={() => {
+                      setAttached(true)
+                      console.log("BrowserView attached");
+                    }}
+                    onUpdateTargetUrl={() => {
+                      // console.log("Updating url");
+                      // setAttached(false)
+                    }}
+                    onDidFinishLoad={() => {
+                      // setAttached(true)
+                      // console.log("Updated url");
+                    }}
+                    style={{
+                      height: 600,
+                    }}
+                    disablewebsecurity={true}
+                  />
+                }
+              </>}
           </Paper>
-      </Grid>
+        </Grid>
 
-      <Grid item xs={2}>
-        <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
-          <h4 style={{ textAlign: "center" }}>
-            Online Buddies({onlineUsers.length})
+        <Grid item xs={2}>
+          <Paper elevation={3} style={{ paddingTop: 5, marginBottom: 20, minHeight: 690, }}>
+            <h4 style={{ textAlign: "center" }}>
+              Online Buddies({onlineUsers.length})
             </h4>
-          <Divider />
-          <List component="nav" style={{ padding: 10 }}>
-            {onlineUsers && onlineUsers.map((item) => {
-              return (
-                <ListItemText key={item.uid} primary={level() + item.nickname} />
-              )
-            })}
-          </List>
-        </Paper>
-      </Grid>
+            <Divider />
+            <List component="nav" style={{ padding: 10 }}>
+              {onlineUsers && onlineUsers.map((item) => {
+                return (
+                  <ListItemText key={item.uid} primary={level() + item.nickname} />
+                )
+              })}
+            </List>
+          </Paper>
+        </Grid>
 
       </Grid>
     </div >
